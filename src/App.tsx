@@ -91,6 +91,56 @@ const DEFAULT_CONFIG: SiteConfig = {
   }
 };
 
+// Internal component for Portfolio images
+const PortfolioImageGallery = ({ images }: { images: string[] }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (images.length <= 1) {
+      setCurrentIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  if (!images || images.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center bg-hankyung-navy/5">
+        <FileText size={48} className="text-slate-200" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-full">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={`${currentIndex}-${images[currentIndex]}`}
+          src={images[currentIndex]}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </AnimatePresence>
+      {images.length > 1 && (
+        <div className="absolute bottom-4 right-4 flex gap-1 z-10">
+          {images.map((_, i) => (
+            <div 
+              key={i} 
+              className={`h-1 rounded-full transition-all duration-500 ${i === currentIndex ? 'w-4 bg-hankyung-yellow' : 'w-1 bg-white/40'}`} 
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function App() {
   const [activeSection, setActiveSection] = useState<Section>('home');
   const [adminTab, setAdminTab] = useState<AdminTab>('general');
@@ -102,8 +152,8 @@ export default function App() {
 
   // Site Data State
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(DEFAULT_CONFIG);
-  
-  // Initial Data
+
+  // Initial Data (Updated to match latest user specifications)
   const initialExperience: ExperienceItem[] = [
     {
       id: '1',
@@ -115,58 +165,58 @@ export default function App() {
     },
     {
       id: '2',
-      title: "인천국제공항 보안 실무 (현직)",
-      role: "실무경력 / 보안 및 동선 관리",
-      desc: "수만 명의 유동인구가 발생하는 현장에서 돌발 상황 대응 및 안전 프로토콜을 수행하며 완벽한 현장 통제 능력을 갖추었습니다.",
-      tags: ["현장 통제", "안전 관리", "위기 대응"],
+      title: "인천국제공항보안 (특수경비)",
+      role: "실무경력 / 현장 대응 및 안전 관리",
+      desc: "인천공항 보안 최전선에서 현장 긴급 대응 및 승객 안전 관리를 수행했습니다. 철저한 원칙 준수와 문제 해결 능력을 바탕으로 합니다.",
+      tags: ["안전관리", "현장대응", "원칙준수"],
       type: 'work'
     },
     {
       id: '3',
-      title: "대구스마트시민홍보단 2기",
-      role: "주요 성과 / 최우수상 수상",
-      desc: "재난 안전에 대한 실효성 있는 해결 방안을 제시하고 홍보 활동을 주도하여 대구광역시 최우수 활동자로 선정되었습니다.",
-      tags: ["재난안전", "기획력", "최우수상"],
+      title: "리얼월드 '대구경북하다'",
+      role: "주요 성과 / 장려상 수상",
+      desc: "인터랙티브 관광 게임 콘텐츠 기획 설계 및 제작에 참여하여 장려상을 수상했습니다.",
+      tags: ["콘텐츠기획", "디지털설계", "장려상"],
       type: 'award'
     },
     {
       id: '4',
-      title: "캡스톤디자인 프로젝트 (캠버)",
+      title: "대구스마트시민홍보단 2기",
       role: "주요 성과 / 최우수상 수상",
-      desc: "팀장으로서 청도 캠핑 코스 여행 상품을 기획하고 참가자 동선을 최적화하여 캡스톤디자인 최우수상을 수상했습니다.",
-      tags: ["여행기획", "동선최적화", "최우수상"],
+      desc: "재난안전에 대한 해결방안 제시 및 홍보 활동을 통해 최우수상을 수상했습니다.",
+      tags: ["재난안전", "기획력", "최우수상"],
       type: 'award'
     },
     {
       id: '5',
-      title: "리얼월드 '대구경북하다'",
-      role: "주요 성과 / 장려상 수상",
-      desc: "인터랙티브 관광 게임 콘텐츠를 기획하고 설계하여 참여자의 몰입도를 높이는 프로그램 제안으로 장려상을 수상했습니다.",
-      tags: ["콘텐츠기획", "디지털설계", "장려상"],
+      title: "캠버 캡스톤디자인",
+      role: "주요 성과 / 최우수상 수상",
+      desc: "청도 캠핑코스 여행 기획 및 참가자 동선 최적화 능력을 인정받아 최우수상을 수상했습니다.",
+      tags: ["여행기획", "동선최적화", "최우수상"],
       type: 'award'
     }
   ];
 
   const initialPortfolio: PortfolioItem[] = [
     {
-      id: '1',
-      title: "제주 여행 예산 기획안",
-      subtitle: "합리적인 소비 기획",
-      desc: "정밀한 예산 집행 및 정산 능력을 보여주는 기획서 자료입니다. 효율적인 리소스 관리를 증명합니다.",
+      id: 'p1',
+      title: "제주 여행 예산 기획 프로젝트",
+      subtitle: "EXPENDITURE STRATEGY",
+      desc: "철저한 예산 관리와 자원 배분의 정석을 보여주는 기획안입니다.",
       images: []
     },
     {
-      id: '2',
-      title: "코타키나발루 일정표",
-      subtitle: "분 단위 스케줄링",
-      desc: "현장 상황을 초 단위로 예측하고 관리하는 치밀한 타임라인 설계 능력을 보여줍니다.",
+      id: 'p2',
+      title: "코타키나발루 테마 여행 스케줄링",
+      subtitle: "OPERATIONS LOGISTICS",
+      desc: "분 단위 현지 조율과 동선 설계를 담은 운영 가이드입니다.",
       images: []
     },
     {
-      id: '3',
-      title: "2030 패키지 제안서",
-      subtitle: "데이터 마케팅 전략",
-      desc: "통계 자료를 활용한 트렌드 분석 및 상품 기대효과 도출 능력을 입증하는 자료입니다.",
+      id: 'p3',
+      title: "MZ세대 타겟 패키지 제안",
+      subtitle: "MARKETING ANALYSIS",
+      desc: "데이터 기반의 트렌드 분석과 상품성 도출 과정을 담은 전략 기획서입니다.",
       images: []
     }
   ];
@@ -252,11 +302,13 @@ export default function App() {
     Promise.all(readers).then(results => {
       setPortfolioData(prev => {
         const newData = prev.map(p => 
-          p.id === portfolioId ? { ...p, images: [...p.images, ...results] } : p
+          p.id === portfolioId ? { ...p, images: [...(p.images || []), ...results] } : p
         );
-        // Instant sync for local session
-        return newData;
+        return [...newData]; // Force new reference
       });
+    }).catch(err => {
+      console.error("Image processing error:", err);
+      alert("이미지 처리 중 오류가 발생했습니다.");
     });
   };
 
@@ -266,64 +318,22 @@ export default function App() {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setSiteConfig(prev => ({
-        ...prev,
-        [section]: {
-          ...(prev[section] as any),
-          [field]: reader.result as string
-        }
-      } as any));
+      setSiteConfig(prev => {
+        const newConfig = {
+          ...prev,
+          [section]: {
+            ...(prev[section] as any),
+            [field]: reader.result as string
+          }
+        } as SiteConfig;
+        return newConfig;
+      });
     };
     reader.readAsDataURL(file);
   };
 
-  // Internal component for Portfolio images
-  const PortfolioImageGallery = ({ images }: { images: string[] }) => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    useEffect(() => {
-      if (images.length <= 1) return;
-      const interval = setInterval(() => {
-        setCurrentIndex(prev => (prev + 1) % images.length);
-      }, 4000);
-      return () => clearInterval(interval);
-    }, [images.length]);
-
-    if (images.length === 0) {
-      return (
-        <div className="flex h-full items-center justify-center bg-hankyung-navy/5">
-          <FileText size={48} className="text-slate-200" />
-        </div>
-      );
-    }
-
-    return (
-      <div className="relative w-full h-full">
-        <AnimatePresence mode="wait">
-          <motion.img
-            key={currentIndex}
-            src={images[currentIndex]}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        </AnimatePresence>
-        {images.length > 1 && (
-          <div className="absolute bottom-4 right-4 flex gap-1 z-10">
-            {images.map((_, i) => (
-              <div 
-                key={i} 
-                className={`h-1 rounded-full transition-all duration-500 ${i === currentIndex ? 'w-4 bg-hankyung-yellow' : 'w-1 bg-white/40'}`} 
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
+  // Removed redundant internal definition
+  
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden selection:bg-hankyung-yellow selection:text-hankyung-navy">
       {/* Navigation */}
@@ -449,23 +459,30 @@ export default function App() {
 
                 <div className="flex flex-col space-y-12 lg:col-span-7">
                   <div className="space-y-8">
-                    <div className="group rounded-[2.5rem] bg-slate-50 p-10 transition-all hover:bg-white hover:shadow-2xl hover:shadow-slate-200/50">
-                      <div className="mb-8 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-hankyung-navy text-hankyung-yellow shadow-lg shadow-hankyung-navy/20">
-                            <Award size={28} />
-                          </div>
-                          <h4 className="text-2xl font-black text-slate-900 tracking-tight">주요 성과 및 수상</h4>
+                    <div className="group rounded-[2.5rem] bg-slate-50 p-10 transition-all hover:bg-white hover:shadow-2xl hover:shadow-slate-200/50 border border-slate-100">
+                      <div className="mb-12 flex items-center gap-4">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-hankyung-navy text-hankyung-yellow shadow-lg shadow-hankyung-navy/20">
+                          <Award size={28} />
+                        </div>
+                        <div>
+                          <h4 className="text-2xl font-black text-slate-900 tracking-tight">주요 성과 및 경력 사항</h4>
+                          <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Key Success & Career History</p>
                         </div>
                       </div>
-                      <div className="space-y-6">
-                        {experienceData.filter(e => e.type === 'award').map(exp => (
-                          <div key={exp.id} className="flex gap-4 group/item">
-                            <CheckCircle2 className="mt-1.5 shrink-0 text-hankyung-yellow" size={20} />
+                      <div className="space-y-8 relative overflow-hidden">
+                        <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-slate-200/50" />
+                        {experienceData.map((exp, idx) => (
+                          <div key={exp.id} className="relative pl-14 group/item">
+                            <div className={`absolute left-4 top-1.5 h-4 w-4 rounded-full border-4 border-white shadow-md z-10 ${exp.type === 'award' ? 'bg-hankyung-yellow' : 'bg-hankyung-navy'}`} />
                             <div>
-                              <p className="text-lg font-black text-slate-900 group-hover/item:text-blue-700 transition-colors">{exp.title}</p>
-                              <p className="text-sm font-bold text-slate-500 mt-0.5">{exp.role}</p>
-                              <p className="text-sm text-slate-600 mt-2 leading-relaxed">{exp.desc}</p>
+                              <div className="flex flex-wrap items-center gap-3 mb-1">
+                                <p className="text-lg font-black text-slate-900 group-hover/item:text-blue-700 transition-colors uppercase tracking-tight">{exp.title}</p>
+                                <span className={`px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${exp.type === 'award' ? 'bg-hankyung-yellow/20 text-hankyung-navy' : 'bg-slate-200 text-slate-500'}`}>
+                                  {exp.type === 'award' ? 'Success' : 'Career'}
+                                </span>
+                              </div>
+                              <p className="text-sm font-bold text-hankyung-navy opacity-60 italic">{exp.role}</p>
+                              <p className="text-sm text-slate-500 mt-2 leading-relaxed font-medium">{exp.desc}</p>
                             </div>
                           </div>
                         ))}
@@ -476,23 +493,26 @@ export default function App() {
                       <div className="absolute top-0 right-0 w-64 h-64 bg-hankyung-yellow/5 rounded-full -mr-32 -mt-32" />
                       <div className="mb-8 flex items-center gap-4">
                         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-hankyung-yellow text-hankyung-navy">
-                          <Briefcase size={28} />
+                          <CheckCircle2 size={28} />
                         </div>
-                        <h4 className="text-2xl font-black tracking-tight underline-offset-8 decoration-hankyung-yellow underline decoration-4">실무 경력</h4>
+                        <h4 className="text-2xl font-black tracking-tight">Core Competencies</h4>
                       </div>
-                      <div className="grid gap-10 md:grid-cols-2">
-                        {experienceData.filter(e => e.type === 'work').map(exp => (
-                          <div key={exp.id} className="space-y-3">
-                            <p className="text-hankyung-yellow font-black text-lg">{exp.title}</p>
-                            <p className="text-sm border-l-2 border-hankyung-yellow/30 pl-3 leading-relaxed text-white/70">
-                              {exp.desc}
-                            </p>
+                      <div className="grid gap-6 md:grid-cols-2">
+                        {[
+                          { title: "현장 운영 실무", desc: "카페 경영 및 공항 보안 현장 동선 관리 경력" },
+                          { title: "기획 및 수상 역량", desc: "공립 홍보단 최우수 및 다수의 기획 대회 수상" },
+                          { title: "위기 대응력", desc: "공항 특수 보안 현장 돌발 상황 통제 능력" },
+                          { title: "비즈니스 마인드", desc: "자사 직접 경영을 통한 수익 및 고객 관리 경험" }
+                        ].map((item, i) => (
+                          <div key={i} className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                            <p className="text-hankyung-yellow font-black text-base mb-1">{item.title}</p>
+                            <p className="text-xs text-white/50 font-medium">{item.desc}</p>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    <div className="rounded-[2.5rem] bg-slate-50 p-10 border-2 border-slate-100">
+                    <div className="rounded-[2.5rem] bg-slate-50 p-10 border-2 border-slate-100 ring-4 ring-slate-50">
                       <div className="mb-8 flex items-center gap-4">
                         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm text-hankyung-navy border border-slate-100">
                           <Shield size={28} />
