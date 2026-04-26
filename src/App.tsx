@@ -241,19 +241,22 @@ export default function App() {
     const files = e.target.files;
     if (!files) return;
 
-    const newImages: string[] = [];
     const readers = Array.from(files).map((file: File) => {
+      const reader = new FileReader();
       return new Promise<string>((resolve) => {
-        const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(file as Blob);
+        reader.readAsDataURL(file);
       });
     });
 
     Promise.all(readers).then(results => {
-      setPortfolioData(prev => prev.map(p => 
-        p.id === portfolioId ? { ...p, images: [...p.images, ...results] } : p
-      ));
+      setPortfolioData(prev => {
+        const newData = prev.map(p => 
+          p.id === portfolioId ? { ...p, images: [...p.images, ...results] } : p
+        );
+        // Instant sync for local session
+        return newData;
+      });
     });
   };
 
@@ -272,6 +275,53 @@ export default function App() {
       } as any));
     };
     reader.readAsDataURL(file);
+  };
+
+  // Internal component for Portfolio images
+  const PortfolioImageGallery = ({ images }: { images: string[] }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+      if (images.length <= 1) return;
+      const interval = setInterval(() => {
+        setCurrentIndex(prev => (prev + 1) % images.length);
+      }, 4000);
+      return () => clearInterval(interval);
+    }, [images.length]);
+
+    if (images.length === 0) {
+      return (
+        <div className="flex h-full items-center justify-center bg-hankyung-navy/5">
+          <FileText size={48} className="text-slate-200" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="relative w-full h-full">
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={currentIndex}
+            src={images[currentIndex]}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        </AnimatePresence>
+        {images.length > 1 && (
+          <div className="absolute bottom-4 right-4 flex gap-1 z-10">
+            {images.map((_, i) => (
+              <div 
+                key={i} 
+                className={`h-1 rounded-full transition-all duration-500 ${i === currentIndex ? 'w-4 bg-hankyung-yellow' : 'w-1 bg-white/40'}`} 
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -519,20 +569,10 @@ export default function App() {
                 {portfolioData.map((item) => (
                   <div key={item.id} className="group relative flex flex-col overflow-hidden rounded-[3rem] border border-slate-100 bg-white shadow-xl shadow-slate-100 transition-all hover:-translate-y-2 hover:shadow-2xl">
                     <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden group-hover:cursor-pointer">
-                      {item.images.length > 0 ? (
-                        <div className="flex w-full h-full">
-                          {item.images.map((img, i) => (
-                            <img key={i} src={img} alt={`Slide ${i}`} className="w-full h-full object-cover shrink-0" style={{ display: i === 0 ? 'block' : 'none' }} />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="flex h-full items-center justify-center bg-hankyung-navy/5">
-                           <FileText size={48} className="text-slate-200" />
-                        </div>
-                      )}
+                      <PortfolioImageGallery images={item.images} />
                       {item.images.length > 1 && (
-                        <div className="absolute bottom-4 right-4 rounded-full bg-hankyung-navy/80 px-3 py-1 text-[10px] font-bold text-white backdrop-blur-md">
-                          + {item.images.length - 1} Images
+                        <div className="absolute top-4 right-4 rounded-full bg-hankyung-navy/60 px-3 py-1 text-[10px] font-bold text-white backdrop-blur-md">
+                          GALLERY
                         </div>
                       )}
                     </div>
